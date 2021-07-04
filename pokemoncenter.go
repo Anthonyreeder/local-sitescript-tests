@@ -11,9 +11,11 @@ import (
 //Testing etc.
 func Demo() {
 	client := PokemonCenterClientSetup()
-
-	//unable to set auth cookie in cookie jar as golang is stripping out quotes and breaking the formatting.
-	//So I set it directly in the header by passing it to each functions addHeader function which allows for direct cookie headers.
+	//Set-Cookie is not working, I think its the format.
+	//Also unable to set auth cookie in cookie jar like we do with datadome,
+	//I think this is becuase golang is stripping out quotes and breaking the formatting.
+	//So I set it directly in the header by passing it to each PokemonCenter task.
+	//The addHeader function allows for direct cookie headers.
 	authCookie := []string{"auth={\"access_token\":\"6fa83426-6181-4413-ad27-9ac601aa3232\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
 
 	//Must ensure that Datadome cookie (in helpers/setupClient) is up to date
