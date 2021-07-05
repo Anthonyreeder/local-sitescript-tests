@@ -16,15 +16,23 @@ func Demo() {
 	//I think this is becuase golang is stripping out quotes and breaking the formatting.
 	//So I set it directly in the header by passing it to each PokemonCenter task.
 	//The addHeader function allows for direct cookie headers.
-	authCookie := []string{"auth={\"access_token\":\"aa4a6061-b0a4-44b0-bae8-4bf81fea7489\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
+	authCookie := []string{"auth={\"access_token\":\"aaa3474e-73c4-4937-a0ad-2f47e791ef22\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
 
 	//Must ensure that Datadome cookie (in helpers/setupClient) is up to date
 	//Must ensure authCookie above is up to date
 
 	PokemonCenterAddToCart(client, authCookie)            //tested and working, Currently hard coded to a product. Will be passed from monitor
 	PokemonCenterSubmitAddressDetails(client, authCookie) //tested and working
-	PokemonCenterSubmitPaymentDetails(client, authCookie)
-	PokemonCenterCheckout(client, authCookie)
+	rawKeyId := PokemonCenterGetPaymentKeyId(client, authCookie)
+
+	//Extract KeyID
+	var pokemonCenterResponseKeyId PokemonCenterResponseKeyId
+	json.Unmarshal([]byte(rawKeyId), &pokemonCenterResponseKeyId)
+
+	CyberSourceV2(pokemonCenterResponseKeyId.KeyId)
+	//PokemonCenterSubmitPaymentDetails(client, authCookie)
+	//PokemonCenterCheckout(client, authCookie)
+
 	//TODO
 	//ATC Referal link
 	//ATC get order ID from Product ID
@@ -144,4 +152,18 @@ func PokemonCenterCheckout(client http.Client, directCookie []string) {
 	_, respString := PokemonCenterNewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
+}
+
+func PokemonCenterGetPaymentKeyId(client http.Client, directCookie []string) string {
+	get := GET{
+		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/payment/key?microform=true&locale=en-US",
+	}
+
+	request := PokemonCenterNewRequest(get)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
+	_, respString := PokemonCenterNewResponse(client, request)
+
+	fmt.Println("response Body:", respString)
+
+	return respString
 }

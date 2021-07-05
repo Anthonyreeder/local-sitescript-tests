@@ -2,6 +2,10 @@ package main
 
 import "bytes"
 
+type PokemonCenterResponseKeyId struct {
+	KeyId string `json:"keyId"`
+}
+
 type PokemonCenterRequestCheckoutDetails struct {
 	PurchaseFrom string `json:"purchaseForm"`
 }
