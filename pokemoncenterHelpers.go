@@ -24,7 +24,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create Datadome cookie
 	cookie := &http.Cookie{
 		Name:   "datadome",
-		Value:  "WUYtwrEu_O23vuXGPl0bvO1o~GGs6H~82iiV2yPCMjYnxbtzehfTkgGBScxwymfWWFJ4lMsEv_ZL~sfeYE_v9kUq~1atxajICWEjl2iruL",
+		Value:  "N2Jq4mSY.iu1B_sispv-t-y83jrZI9ZKdqLDTyC-M6FVeKVitNZPg5A_0B5.YU8S7T1n9ldZYhTTp-kgtl-Qy9CNaqJuCuYXG0LdZbeGKM",
 		Path:   "/",
 		Domain: ".pokemoncenter.com",
 	}

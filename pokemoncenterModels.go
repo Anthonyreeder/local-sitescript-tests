@@ -2,10 +2,21 @@ package main
 
 import "bytes"
 
+type PokemonCenterRequestCheckoutDetails struct {
+	PurchaseFrom string `json:"purchaseForm"`
+}
+
+type PokemonCenterRequestPaymentDetails struct {
+	PaymentDisplay string `json:"paymentDisplay"`
+	PaymentKey     string `json:"paymentKey"`
+	PaymentToken   string `json:"paymentToken"`
+}
+
 type PokemonCenterRequestSubmitAddressDetails struct {
 	Shipping Address `json:"shipping"`
 	Billing  Address `json:"billing"`
 }
+
 type Address struct {
 	FamilyName      string `json:"familyName"`
 	GivenName       string `json:"givenName"`
