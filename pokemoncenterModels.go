@@ -2,6 +2,12 @@ package main
 
 import "bytes"
 
+type PokemonCenterResponseSetPayment struct {
+	Self struct {
+		Uri string
+	}
+}
+
 type PokemonCenterResponseKeyId struct {
 	KeyId string `json:"keyId"`
 }

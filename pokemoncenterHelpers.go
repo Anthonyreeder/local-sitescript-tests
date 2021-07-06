@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,30 @@ import (
 	"net/url"
 	"strings"
 )
+
+func findInString(str, start, end string) ([]byte, error) {
+	var match []byte
+	index := strings.Index(str, start)
+
+	if index == -1 {
+		return match, errors.New("Not found")
+	}
+
+	index += len(start)
+
+	for {
+		char := str[index]
+
+		if strings.HasPrefix(str[index:index+len(match)], end) {
+			break
+		}
+
+		match = append(match, char)
+		index++
+	}
+
+	return match, nil
+}
 
 func PokemonCenterClientSetup() http.Client {
 	//Create empty cookiejar
@@ -24,7 +49,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create Datadome cookie
 	cookie := &http.Cookie{
 		Name:   "datadome",
-		Value:  "GTtyIGIRRISWq_7uqUKRpltf4UJB2sXEciUyI0zAELMDIkP~W-XNj~ATFjZZwwA_MBfFF30wumX90U3xSoO_KsEglhk6ELhaQS39hRwDqZ",
+		Value:  "IesmV63AI8aKKzjXz~9NPj0vHhhJ..I6o4GWEQnmt~nyEhyezX-F3VwrWlPDAbOhFBYMii6VEA08fA4Zd.VwSbQu1yy_mTtt8g.v3Y0wAh",
 		Path:   "/",
 		Domain: ".pokemoncenter.com",
 	}

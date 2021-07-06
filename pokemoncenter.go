@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 //Testing etc.
@@ -16,7 +17,7 @@ func Demo() {
 	//I think this is becuase golang is stripping out quotes and breaking the formatting.
 	//So I set it directly in the header by passing it to each PokemonCenter task.
 	//The addHeader function allows for direct cookie headers.
-	authCookie := []string{"auth={\"access_token\":\"aaa3474e-73c4-4937-a0ad-2f47e791ef22\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
+	authCookie := []string{"auth={\"access_token\":\"3e332b93-3806-4870-b47d-c3b3969df69b\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
 
 	//Must ensure that Datadome cookie (in helpers/setupClient) is up to date
 	//Must ensure authCookie above is up to date
@@ -29,9 +30,23 @@ func Demo() {
 	var pokemonCenterResponseKeyId PokemonCenterResponseKeyId
 	json.Unmarshal([]byte(rawKeyId), &pokemonCenterResponseKeyId)
 
-	CyberSourceV2(pokemonCenterResponseKeyId.KeyId)
-	//PokemonCenterSubmitPaymentDetails(client, authCookie)
-	//PokemonCenterCheckout(client, authCookie)
+	//CyberSourceV2(pokemonCenterResponseKeyId.KeyId)
+	//
+	//replace paymentKey and paymentToken with values returned from CyberSourceV2
+	paymentKey := "eyJraWQiOiJ3ZiIsImFsZyI6IlJTMjU2In0.eyJmbHgiOnsicGF0aCI6Ii9mbGV4L3YyL3Rva2VucyIsImRhdGEiOiIzeDdGRjZCUUhrWkt1TnlpQTNMQ2d4QUFFSmk0SGh0MjZMSVg1SnUrc1ZVaGY2UUFXQkFJZ2RnNktCbUJrS3RuUnM4YlBmb1VrUzBXeTYvTVMxMzZNLzlyZ043U1FmZFJtNFo4eXRJYVpOWDByVDdpVjhKcDBuYTFPZHlBYzBaSTk5UWkiLCJvcmlnaW4iOiJodHRwczovL2ZsZXguY3liZXJzb3VyY2UuY29tIiwiandrIjp7Imt0eSI6IlJTQSIsImUiOiJBUUFCIiwidXNlIjoiZW5jIiwibiI6InBVdHdpcGJrT181VnJYeXlOMUI1T21hWVM5UmxkRzJZWHFGYmhlMkJkVHBwdjBfdGtONFhIYkNmNkhKWjl2eVdwRURnYllGUTdsSGlOYnF0UXpWWEUtbDVGdTVhMlBES3N2d0Ryek1kWkQ4R0liU0phaUs0U0RaNERNX3hsVlgwYXBfdm9rVTFyZDJYN0o0MHE0RnUzMUhycURIQ0VCcUVuZFk4MEx4Q3hCX09nMzlhckRmZVpEVmFrNE1tcDJHTFluaG9lM1pOMUFXWm00R0lnNVZFQ0RUZGRPN3VWb05UUWVyVFFpcWxBN3pIQ1lOaXVjYkpqdlE0RUxwSkQyQkdzc0lJSHJjcERfbmVoTmp6NklHVm51VzJ2N25oMGluQUtVTFEyMmRDVU9KUDlkTHhUcC05NG04Z2FXVGd0TWljbHFadWhOX2tnbXRiLURTY21FV3VsdyIsImtpZCI6IjAzelRvU25STGdXN0xNRHZiY2RtUjFZY1ZvV1d4bkFKIn19LCJjdHgiOlt7ImRhdGEiOnsidGFyZ2V0T3JpZ2lucyI6WyJodHRwczovL3d3dy5wb2tlbW9uY2VudGVyLmNvbSIsImh0dHBzOi8vdGVzdC5wb2tlbW9uY2VudGVyLmNvbSIsImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJtZk9yaWdpbiI6Imh0dHBzOi8vZmxleC5jeWJlcnNvdXJjZS5jb20ifSwidHlwZSI6Im1mLTAuMTEuMCJ9XSwiaXNzIjoiRmxleCBBUEkiLCJleHAiOjE2MjU1OTA1MzgsImlhdCI6MTYyNTU4OTYzOCwianRpIjoicDlncU1Wc0xzTGtJOFdIcSJ9.kM6YfQbCK4w4U1SIppPExDQjLmXUoO6JOTFD9JhcKyueNf7F_d5JCYkmeIg_u0BRx5pmkANbSn_ODxYgkfWZPqI6_TR3CTR-BtuZJRhejiciNwYmwVB_NuIjggYTSLEEnumb617otxLalxt7Fyp6LrU0p_BwgPG4Hx9txdPM2AWySaYb4UT57wcITmBE5Yanr_CoXLj0iCnZC43wvnkfdQ6ZHhO7ErRHSghsVT1Yh7D-JsSQ-J7s3oTDpMk-kV5mF4t7klwJcikyOpsr6FTzed9Bn2c-Vnl4F_lkCITDybxlPQcuZnX-MSi_Z4C9HW3fFd2P6q1SraGUSRA8LidH5w"
+	paymentToken := "1C3J1NO3TQJO4TKRDEGZXP42TENC1Z8Q9IH776B50UC08F7I1D1N60E48B1DCBF2"
+
+	//paymentToken := "1C0SIGRUV2U999XPDWYQJBO4FNW2O0DV48AQT8GT0B2GE8O5DSHE60E34D388CC3"
+
+	paymentBytes := PokemonCenterSubmitPaymentDetails(client, authCookie, paymentKey, paymentToken)
+
+	//we need to get the return value from payment to pass to checkout
+	var pokemonCenterResponseSetPayment = PokemonCenterResponseSetPayment{}
+	json.Unmarshal(paymentBytes, &pokemonCenterResponseSetPayment)
+
+	checkoutPayload := strings.Replace(pokemonCenterResponseSetPayment.Self.Uri, "paymentmethods", "purchases", 1) + "/form"
+
+	PokemonCenterCheckout(client, authCookie, checkoutPayload)
 
 	//TODO
 	//ATC Referal link
@@ -56,7 +71,7 @@ func PokemonCenterAddToCart(client http.Client, directCookie []string) {
 
 	post := POST{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/cart?type=product&format=zoom.nodatalinks",
-		Payload:  bytes.NewReader([]byte(payloadBytes)),
+		Payload:  bytes.NewReader(payloadBytes),
 	}
 
 	request := PokemonCenterNewRequest(post)
@@ -98,7 +113,7 @@ func PokemonCenterSubmitAddressDetails(client http.Client, directCookie []string
 
 	post := POST{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/address?format=zoom.nodatalinks",
-		Payload:  bytes.NewReader([]byte(payloadBytes)),
+		Payload:  bytes.NewReader(payloadBytes),
 	}
 
 	request := PokemonCenterNewRequest(post)
@@ -109,11 +124,11 @@ func PokemonCenterSubmitAddressDetails(client http.Client, directCookie []string
 }
 
 //Submit payment info
-func PokemonCenterSubmitPaymentDetails(client http.Client, directCookie []string) {
+func PokemonCenterSubmitPaymentDetails(client http.Client, directCookie []string, paymentKey string, paymentToken string) []byte {
 	payloadBytes, err := json.Marshal(PokemonCenterRequestPaymentDetails{
 		PaymentDisplay: "Visa 02/2026",
-		PaymentKey:     "eyJraWQiOiJ3ZiIsImFsZyI6IlJTMjU2In0.eyJmbHgiOnsicGF0aCI6Ii9mbGV4L3YyL3Rva2VucyIsImRhdGEiOiJBL0wwUFVMTDIyeDg2U3pWb01neE54QUFFTFpPYzdkUjliQ0pqNWlYdDFFYjR4dFdvSEIrdHJYTE84OG0vUThYWThabUtDUnVMbUl6Q0cyQWw1c0FxeitoSWRVZFEzSVNkazBSdURsK2txZXlZMTRXWUxFMDBVZEwyTkdSb3F3cEdYUTMiLCJvcmlnaW4iOiJodHRwczovL2ZsZXguY3liZXJzb3VyY2UuY29tIiwiandrIjp7Imt0eSI6IlJTQSIsImUiOiJBUUFCIiwidXNlIjoiZW5jIiwibiI6Im1ONFM1cEhhbS1NczRreEstTnJ5blloS2V3YzJSWTB5VHkyX3NxcFdOQmRmZmJwWVBvcU9xREpQLXJwbWJDSkd4RXA1VWZlT1N6VllBcndLOVVZbkZyUWc1TzJzLUxHSmVQajdaXzZ0UTF2Z1JWczFWclNzdTFJR1ZtT2ZGRF9jN3pldDJRUno3TDljVDBmbkk2ZXBsS0pKNS1ZS2g3eEJYSl83ZmR3akJ0QXZNVDMzbm1Bb1B4WE1iQ3MwejlsX1VBMUtoRjU0Z1VwcHpmQkRWX3dYMW9GRjRVS0xTdTUzQmpaVjJUQkQ1VFNZdjBLZmhveVhSUXd5dGNMaVdhTjFuRndHd2g3QlJUODRGUDF2dnNLQkIyckExd3JTN3dmTjNQLTJrLWFGQmNlY3ZiZVRPUkdSdUNXVWU1bTRFeTd4OHJqbGtza1puUmZ0QjQ4YU1reGdNdyIsImtpZCI6IjAzTjlXQXBjQUoxeFFHQUN0ME5NWG5FVnVjanJXYUFtIn19LCJjdHgiOlt7ImRhdGEiOnsidGFyZ2V0T3JpZ2lucyI6WyJodHRwczovL3d3dy5wb2tlbW9uY2VudGVyLmNvbSIsImh0dHBzOi8vdGVzdC5wb2tlbW9uY2VudGVyLmNvbSIsImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJtZk9yaWdpbiI6Imh0dHBzOi8vZmxleC5jeWJlcnNvdXJjZS5jb20ifSwidHlwZSI6Im1mLTAuMTEuMCJ9XSwiaXNzIjoiRmxleCBBUEkiLCJleHAiOjE2MjU1MDkxNTMsImlhdCI6MTYyNTUwODI1MywianRpIjoicFZxeExyam5tZ24wZGhFNSJ9.G5U8Dmb5TOfwWYdh5SIFKixzCrF41kf_B9Kx-Kkfs9x4KRwCN-7-zc01onRlsURL4mBRk9L_Uz3lreMgJoGPB6sxdW_iJv0Wg_zYEYFRwlMg6NuVewUyfyGwlDqmij62o88Z16MBhtJmJRhUCHzgRnIeVVv3BKXq_6b8xsVyZwkq-TpgiaCcRDw2NFOcaSfdWciIfWkNBz0Y60KcYU8E2ykQ-I5Wdu6svrMJmvftpPyyKnD9r_KXuBjmOtvXNUy3knIRxlyynbmspF1Q8DRgMM9nRCPogJlysgD7F8bJUnM0dHLZsqJr5epp_N73-yQ9PRrnuAalqtwNjssG3SVv_w",
-		PaymentToken:   "1C0SIGRUV2U999XPDWYQJBO4FNW2O0DV48AQT8GT0B2GE8O5DSHE60E34D388CC3",
+		PaymentKey:     paymentKey,
+		PaymentToken:   paymentToken,
 	},
 	)
 	if err != nil {
@@ -122,20 +137,21 @@ func PokemonCenterSubmitPaymentDetails(client http.Client, directCookie []string
 
 	post := POST{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/payment?microform=true&format=zoom.nodatalinks",
-		Payload:  bytes.NewReader([]byte(payloadBytes)),
+		Payload:  bytes.NewReader(payloadBytes),
 	}
 
 	request := PokemonCenterNewRequest(post)
 	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	_, respString := PokemonCenterNewResponse(client, request)
+	respBytes, respString := PokemonCenterNewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
+	return respBytes
 }
 
 //Checkout
-func PokemonCenterCheckout(client http.Client, directCookie []string) {
+func PokemonCenterCheckout(client http.Client, directCookie []string, payloadValue string) {
 	payloadBytes, err := json.Marshal(PokemonCenterRequestCheckoutDetails{
-		PurchaseFrom: "/purchases/orders/pokemon/miywkmjsgq4dgljugi2wcljummygellcha2tmljxmiygeyrtgjsgiy3dgy=/form",
+		PurchaseFrom: payloadValue,
 	},
 	)
 	if err != nil {
@@ -144,7 +160,7 @@ func PokemonCenterCheckout(client http.Client, directCookie []string) {
 
 	post := POST{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/order?format=zoom.nodatalinks",
-		Payload:  bytes.NewReader([]byte(payloadBytes)),
+		Payload:  bytes.NewReader(payloadBytes),
 	}
 
 	request := PokemonCenterNewRequest(post)
