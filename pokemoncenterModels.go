@@ -45,6 +45,16 @@ type PokemonCenterRequestAddToCart struct {
 	Quantity      int    `json:"quantity"`
 }
 
+type PokemonCenterStockCheckResponse struct {
+	Self Self
+}
+
+type Self struct {
+	Type string
+	Id string
+	Quantity int
+}
+
 type POST struct {
 	Endpoint string
 	Payload  *bytes.Reader

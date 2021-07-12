@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func findInString(str, start, end string) ([]byte, error) {
+func FindInString(str, start, end string) ([]byte, error) {
 	var match []byte
 	index := strings.Index(str, start)
 
@@ -49,7 +49,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create Datadome cookie
 	cookie := &http.Cookie{
 		Name:   "datadome",
-		Value:  "IesmV63AI8aKKzjXz~9NPj0vHhhJ..I6o4GWEQnmt~nyEhyezX-F3VwrWlPDAbOhFBYMii6VEA08fA4Zd.VwSbQu1yy_mTtt8g.v3Y0wAh",
+		Value:  "PaOO75BI~SWcyV0Um_zrh6pn0nbw3vCs4t_Ua6Dc~FLzUHgnFzjA3TrochEHy.cvSiwmug8hjUCxVlHNYtRn8kuwGJJKOV-JbCmGOfarZm",
 		Path:   "/",
 		Domain: ".pokemoncenter.com",
 	}

@@ -6,24 +6,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 //Testing etc.
 func Demo() {
 	client := PokemonCenterClientSetup()
-	//Set-Cookie is not working, I think its the format.
+	//Set-Cookie is not working with this cookie, I think its the format.
 	//Also unable to set auth cookie in cookie jar like we do with datadome,
 	//I think this is becuase golang is stripping out quotes and breaking the formatting.
 	//So I set it directly in the header by passing it to each PokemonCenter task.
-	//The addHeader function allows for direct cookie headers.
-	authCookie := []string{"auth={\"access_token\":\"3e332b93-3806-4870-b47d-c3b3969df69b\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
+	//The addHeader function allows  for direct cookie headers.
+	authCookie := []string{"auth={\"access_token\":\"59400864-da63-4fd3-b875-98ffb9a0cd3d\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
 
 	//Must ensure that Datadome cookie (in helpers/setupClient) is up to date
 	//Must ensure authCookie above is up to date
-
-	PokemonCenterAddToCart(client, authCookie)            //tested and working, Currently hard coded to a product. Will be passed from monitor
-	PokemonCenterSubmitAddressDetails(client, authCookie) //tested and working
+	PokemonCenterGetAuthId(client, []string{})
+	//get auth cookie
+	u, _ := url.Parse("http://www.pokemoncenter.com")
+	test := client.Jar.Cookies(u)
+	println(test[len(test)-1])
+	PokemonCenterStockCheck(client, authCookie, "qgqvhkjxgazs2mbvgqyds")
+	PokemonCenterAddToCart(client, authCookie)
+	PokemonCenterSubmitAddressDetailsValidate(client, authCookie) //will tell u if there are any issues with address
+	PokemonCenterSubmitAddressDetails(client, authCookie)
 	rawKeyId := PokemonCenterGetPaymentKeyId(client, authCookie)
 
 	//Extract KeyID
@@ -48,17 +55,43 @@ func Demo() {
 
 	PokemonCenterCheckout(client, authCookie, checkoutPayload)
 
-	//TODO
-	//ATC Referal link
-	//ATC get order ID from Product ID
-	//Encrypt payment info
-	//Encrypt:: Parse paymentKey from payment/key? <------- PaymentKey
-	//Encrypt:: Use paymentKey as part of CyberSourceV2
-	//Encrypt:: Pass encrpyted data too flex.cybersource to get the jweResponse
-	//Encrypt:: Return the JTI string, this is the payment token <---------PaymentToken
-	//Encrypt:: paymentDisplay = Visa 02/2026 <-----------PaymentDisplay
-	//Submit payment info Load PaymentKey, PaymentToken and PaymentDisplay into json and post to payment API
-	//Checkout order, Use response of above to get the 'URI'. Remove the junk, post to Order api
+	//Todo: Set AUTHID Organically.
+}
+
+func PokemonCenterStockCheck(client http.Client, directCookie []string, product string) bool {
+	payloadBytes, err := json.Marshal(PokemonCenterRequestAddToCart{ProductUri: "/carts/items/pokemon/" + product + "=/form", Quantity: 1, Configuration: ""})
+	if err != nil {
+		log.Fatal("Marshal payload failed with error " + err.Error())
+	}
+
+	post := POST{
+		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/cart?type=product&format=zoom.nodatalinks",
+		Payload:  bytes.NewReader(payloadBytes),
+	}
+
+	request := PokemonCenterNewRequest(post)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	responseBytes, _ := PokemonCenterNewResponse(client, request)
+
+	pokemonCenterStockCheckResponse := PokemonCenterStockCheckResponse{}
+	json.Unmarshal(responseBytes, &pokemonCenterStockCheckResponse)
+
+	if strings.Contains(pokemonCenterStockCheckResponse.Self.Type, "error") {
+		if strings.Contains(pokemonCenterStockCheckResponse.Self.Id, "item.not.available") {
+			//out of stock
+			//in production we can return oos or 'other error' depending on this 'ID' value.
+			return false
+		} else {
+			//Not out of stock but there was an error adding the item to cart.
+			return false
+		}
+	} else if strings.Contains(pokemonCenterStockCheckResponse.Self.Type, "carts.line-item") {
+		return true
+		//in stock
+	} else {
+		//unknown type
+		return false
+	}
 }
 
 //Add to cart
@@ -78,6 +111,50 @@ func PokemonCenterAddToCart(client http.Client, directCookie []string) {
 	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
 	_, respString := PokemonCenterNewResponse(client, request)
 
+	//Please enable JS and disable any ad blocker = captcha, New cookie needed.
+
+	fmt.Println("response Body:", respString)
+}
+
+//must be called before submit address
+func PokemonCenterSubmitAddressDetailsValidate(client http.Client, directCookie []string) {
+	payloadBytes, err := json.Marshal(PokemonCenterRequestSubmitAddressDetails{
+		Billing: Address{
+			FamilyName:      "Reeder",
+			GivenName:       "Ant",
+			StreetAddress:   "1301 Reisling Ct",
+			ExtendedAddress: "",
+			Locality:        "Las Vegas",
+			Region:          "NV",
+			PostalCode:      "89144",
+			CountryName:     "US",
+			PhoneNumber:     "+1 (342) 342-3423",
+		},
+		Shipping: Address{
+			FamilyName:      "Reeder",
+			GivenName:       "Ant",
+			StreetAddress:   "1301 Reisling Ct",
+			ExtendedAddress: "",
+			Locality:        "Las Vegas",
+			Region:          "NV",
+			PostalCode:      "89144",
+			CountryName:     "US",
+			PhoneNumber:     "+1 (342) 342-3423",
+		},
+	})
+	if err != nil {
+		log.Fatal("Marshal payload failed with error " + err.Error())
+	}
+
+	post := POST{
+		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/address/validate",
+		Payload:  bytes.NewReader(payloadBytes),
+	}
+
+	request := PokemonCenterNewRequest(post)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	_, respString := PokemonCenterNewResponse(client, request)
+
 	fmt.Println("response Body:", respString)
 }
 
@@ -85,26 +162,26 @@ func PokemonCenterAddToCart(client http.Client, directCookie []string) {
 func PokemonCenterSubmitAddressDetails(client http.Client, directCookie []string) {
 	payloadBytes, err := json.Marshal(PokemonCenterRequestSubmitAddressDetails{
 		Billing: Address{
-			FamilyName:      "familyName",
-			GivenName:       "givenName",
-			StreetAddress:   "streetAddress",
-			ExtendedAddress: "extendedAddress",
-			Locality:        "locality",
-			Region:          "region",
-			PostalCode:      "12312312",
-			CountryName:     "ga",
-			PhoneNumber:     "13312423423",
+			FamilyName:      "Reeder",
+			GivenName:       "Ant",
+			StreetAddress:   "1301 Reisling Ct",
+			ExtendedAddress: "",
+			Locality:        "Las Vegas",
+			Region:          "NV",
+			PostalCode:      "89144",
+			CountryName:     "US",
+			PhoneNumber:     "+1 (342) 342-3423",
 		},
 		Shipping: Address{
-			FamilyName:      "familyName",
-			GivenName:       "givenName",
-			StreetAddress:   "streetAddress",
-			ExtendedAddress: "extendedAddress",
-			Locality:        "locality",
-			Region:          "region",
-			PostalCode:      "12312312",
-			CountryName:     "ga",
-			PhoneNumber:     "13312423423",
+			FamilyName:      "Reeder",
+			GivenName:       "Ant",
+			StreetAddress:   "1301 Reisling Ct",
+			ExtendedAddress: "",
+			Locality:        "Las Vegas",
+			Region:          "NV",
+			PostalCode:      "89144",
+			CountryName:     "US",
+			PhoneNumber:     "+1 (342) 342-3423",
 		},
 	})
 	if err != nil {
@@ -173,6 +250,19 @@ func PokemonCenterCheckout(client http.Client, directCookie []string, payloadVal
 func PokemonCenterGetPaymentKeyId(client http.Client, directCookie []string) string {
 	get := GET{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/payment/key?microform=true&locale=en-US",
+	}
+
+	request := PokemonCenterNewRequest(get)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
+	_, respString := PokemonCenterNewResponse(client, request)
+
+	fmt.Println("response Body:", respString)
+
+	return respString
+}
+func PokemonCenterGetAuthId(client http.Client, directCookie []string) string {
+	get := GET{
+		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/cart?format=zoom.nodatalinks",
 	}
 
 	request := PokemonCenterNewRequest(get)
