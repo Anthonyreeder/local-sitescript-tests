@@ -49,6 +49,14 @@ type PokemonCenterStockCheckResponse struct {
 	Self Self
 }
 
+type PokemonCenterLoginRequest struct {
+	Username string
+	Password string
+	Grant_type string
+	Role string
+	Scope string
+}
+
 type Self struct {
 	Type string
 	Id string

@@ -58,6 +58,32 @@ func Demo() {
 	//Todo: Set AUTHID Organically.
 }
 
+func PokemonCenterLogin(client http.Client, directCookie []string) []byte {
+	payloadBytes, err := json.Marshal(PokemonCenterLoginRequest{
+		Username:   "anthonyreeder123@gmail.com",
+		Password:   "thekid225",
+		Grant_type: "password",
+		Role:       "REGISTERED",
+		Scope:      "pokemon",
+	},
+	)
+	if err != nil {
+		log.Fatal("Marshal payload failed with error " + err.Error())
+	}
+
+	post := POST{
+		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/auth?format=zoom.nodatalinks",
+		Payload:  bytes.NewReader(payloadBytes),
+	}
+
+	request := PokemonCenterNewRequest(post)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	respBytes, respString := PokemonCenterNewResponse(client, request)
+
+	fmt.Println("response Body:", respString)
+	return respBytes
+}
+
 func PokemonCenterStockCheck(client http.Client, directCookie []string, product string) bool {
 	payloadBytes, err := json.Marshal(PokemonCenterRequestAddToCart{ProductUri: "/carts/items/pokemon/" + product + "=/form", Quantity: 1, Configuration: ""})
 	if err != nil {
