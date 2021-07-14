@@ -2,6 +2,23 @@ package main
 
 import "bytes"
 
+type PokemonCenterNextData struct {
+	Props struct {
+		IsServer     bool
+		InitialState struct {
+			Product struct {
+				AddToCartForm string
+				Availability  string
+				ListPrice     struct {
+					Amount float32
+				}
+			}
+		}
+		InitialProps struct {
+		}
+	}
+}
+
 type PokemonCenterResponseSetPayment struct {
 	Self struct {
 		Uri string
@@ -58,8 +75,8 @@ type PokemonCenterLoginRequest struct {
 }
 
 type Self struct {
-	Type string
-	Id string
+	Type     string
+	Id       string
 	Quantity int
 }
 

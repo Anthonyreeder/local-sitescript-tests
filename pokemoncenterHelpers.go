@@ -49,7 +49,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create Datadome cookie
 	cookie := &http.Cookie{
 		Name:   "datadome",
-		Value:  "PaOO75BI~SWcyV0Um_zrh6pn0nbw3vCs4t_Ua6Dc~FLzUHgnFzjA3TrochEHy.cvSiwmug8hjUCxVlHNYtRn8kuwGJJKOV-JbCmGOfarZm",
+		Value:  "9VrlPKMJDF~yTp.ueYjkDiV7w4xU3k1nbsWMXvHekV82tNch9AVpjZc5IrfxN~1H9EicjY8mXFAJVA0.F5ZTcfxLFm-LUPid3glq4FVphj",
 		Path:   "/",
 		Domain: ".pokemoncenter.com",
 	}
@@ -66,7 +66,7 @@ func PokemonCenterClientSetup() http.Client {
 	return client
 }
 
-func PokemonCenterNewResponse(client http.Client, request *http.Request) ([]byte, string) {
+func PokemonCenterNewResponse(client http.Client, request *http.Request) ([]byte, *http.Response) {
 	request.Close = true
 
 	resp, err := client.Do(request)
@@ -76,7 +76,7 @@ func PokemonCenterNewResponse(client http.Client, request *http.Request) ([]byte
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	return body, string(body)
+	return body, resp
 }
 
 func PokemonCenterNewClient() http.Client {
