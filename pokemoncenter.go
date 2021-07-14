@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
+	"regexp"
 	"strings"
+
+	"github.com/anaskhan96/soup"
 )
 
 //Testing etc.
@@ -18,16 +20,14 @@ func Demo() {
 	//I think this is becuase golang is stripping out quotes and breaking the formatting.
 	//So I set it directly in the header by passing it to each PokemonCenter task.
 	//The addHeader function allows  for direct cookie headers.
-	authCookie := []string{"auth={\"access_token\":\"59400864-da63-4fd3-b875-98ffb9a0cd3d\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
 
 	//Must ensure that Datadome cookie (in helpers/setupClient) is up to date
 	//Must ensure authCookie above is up to date
-	PokemonCenterGetAuthId(client, []string{})
-	//get auth cookie
-	u, _ := url.Parse("http://www.pokemoncenter.com")
-	test := client.Jar.Cookies(u)
-	println(test[len(test)-1])
-	PokemonCenterStockCheck(client, authCookie, "qgqvhkjxgazs2mbvgqyds")
+	authId := PokemonCenterGetAuthId(client, []string{})
+	authCookie := []string{"auth={\"access_token\":\"" + authId + "\",\"token_type\":\"bearer\",\"expires_in\":604799,\"scope\":\"pokemon\",\"role\":\"PUBLIC\",\"roles\":[\"PUBLIC\"]}"}
+
+	atcForm := PokemonCenterConvertSku(client, authCookie)
+	PokemonCenterStockCheck(client, authCookie, atcForm)
 	PokemonCenterAddToCart(client, authCookie)
 	PokemonCenterSubmitAddressDetailsValidate(client, authCookie) //will tell u if there are any issues with address
 	PokemonCenterSubmitAddressDetails(client, authCookie)
@@ -59,7 +59,7 @@ func Demo() {
 }
 
 func PokemonCenterStockCheck(client http.Client, directCookie []string, product string) bool {
-	payloadBytes, err := json.Marshal(PokemonCenterRequestAddToCart{ProductUri: "/carts/items/pokemon/" + product + "=/form", Quantity: 1, Configuration: ""})
+	payloadBytes, err := json.Marshal(PokemonCenterRequestAddToCart{ProductUri: product, Quantity: 1, Configuration: ""})
 	if err != nil {
 		log.Fatal("Marshal payload failed with error " + err.Error())
 	}
@@ -254,12 +254,13 @@ func PokemonCenterGetPaymentKeyId(client http.Client, directCookie []string) str
 
 	request := PokemonCenterNewRequest(get)
 	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
-	_, respString := PokemonCenterNewResponse(client, request)
+	respBytes, _ := PokemonCenterNewResponse(client, request)
 
-	fmt.Println("response Body:", respString)
+	//fmt.Println("response Body:", respString)
 
-	return respString
+	return string(respBytes)
 }
+
 func PokemonCenterGetAuthId(client http.Client, directCookie []string) string {
 	get := GET{
 		Endpoint: "https://www.pokemoncenter.com/tpci-ecommweb-api/cart?format=zoom.nodatalinks",
@@ -267,9 +268,50 @@ func PokemonCenterGetAuthId(client http.Client, directCookie []string) string {
 
 	request := PokemonCenterNewRequest(get)
 	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
-	_, respString := PokemonCenterNewResponse(client, request)
 
-	fmt.Println("response Body:", respString)
+	_, resp := PokemonCenterNewResponse(client, request)
 
-	return respString
+	rawHeader := resp.Header.Get("Set-Cookie")
+	re := regexp.MustCompile("({)(.*?)(})")
+	match := re.FindStringSubmatch(rawHeader)
+	fmt.Println(match[0])
+
+	var auth Auth
+	json.Unmarshal([]byte(match[0]), &auth)
+
+	return auth.Access_token
+}
+
+func PokemonCenterConvertSku(client http.Client, directCookie []string) string {
+	get := GET{
+		Endpoint: "https://www.pokemoncenter.com/product/703-05994/", //pass in sku
+	}
+
+	request := PokemonCenterNewRequest(get)
+	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
+
+	respBytes, _ := PokemonCenterNewResponse(client, request)
+
+	responseBody := soup.HTMLParse(string(respBytes))
+	nextData := responseBody.Find("script", "id", "__NEXT_DATA__")
+	//priceText := priceBlock.Find("span", "class", "visuallyhidden").Text()
+	//price, err = strconv.Atoi(reg.ReplaceAllString(priceText, ""))
+
+	nextDataString := nextData.Pointer.FirstChild.Data
+	pokemonCenterNextData := PokemonCenterNextData{}
+	json.Unmarshal([]byte(nextDataString), &pokemonCenterNextData)
+
+	//rawHeader := resp.Header.Get("Set-Cookie")
+	//re := regexp.MustCompile("({)(.*?)(})")
+	//match := re.FindStringSubmatch(rawHeader)
+	//fmt.Println(match[0])
+	//fmt.Println(nextDataString)
+	//	//
+	//
+
+	return pokemonCenterNextData.Props.InitialState.Product.AddToCartForm
+}
+
+type Auth struct {
+	Access_token string
 }
