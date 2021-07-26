@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/big"
 	"strings"
-	"unicode/utf8"
 
 	jose "github.com/dvsekhvalnov/jose2go"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -54,14 +53,12 @@ func Base64ToInt(s string) (*big.Int, error) {
 	i.SetBytes(data)
 	return i, nil
 }
-func CyberSourceV2(keyId string) {
+func CyberSourceV2(keyId string) (returnVal string) {
 	key := strings.Split(keyId, ".")[1]
 
 	decodedKeyBytes, _ := base64.StdEncoding.DecodeString(key)
 	decodedKeyString := string(decodedKeyBytes)
 
-	fmt.Println(utf8.RuneCountInString(decodedKeyString))
-	fmt.Println("Key: " + decodedKeyString)
 	var encrypt Encrypt
 	json.Unmarshal([]byte(decodedKeyString), &encrypt)
 
@@ -83,17 +80,10 @@ func CyberSourceV2(keyId string) {
 	header_.Kid = kid
 	header_.Jwk = *rsa_
 
-	b, err := json.Marshal(header_)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println((string(b)))
-
 	card_ := new(Card)
 	card_.SecurityCode = "260"
 	card_.Number = "4767718212263745"
-	card_.Type = "002"
+	card_.Type = "001"
 	card_.ExpMonth = "02"
 	card_.ExpYear = "2026"
 
@@ -102,18 +92,6 @@ func CyberSourceV2(keyId string) {
 	encryptedObject_.Index = 0
 	encryptedObject_.Data = *card_
 
-	b_, err_ := json.Marshal(encryptedObject_)
-
-	//eDecoded, _ := base64.StdEncoding.DecodeString(encrypt.Flx.Jwk.E)
-	//nDecoded, _ := base64.StdEncoding.DecodeString(encrypt.Flx.Jwk.N)
-	//var publicKey = PublicKey{N: eDecoded}
-
-	if err_ != nil {
-		fmt.Println(err_)
-	}
-	fmt.Println((string(b_)))
-
-	//Get RSA
 	jwkJSON := `{
 		"keys": [ 
 		  {
@@ -132,33 +110,32 @@ func CyberSourceV2(keyId string) {
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Println(set)
+
 	for it := set.Iterate(context.Background()); it.Next(context.Background()); {
 		pair := it.Pair()
 		key := pair.Value.(jwk.Key)
 
-		var rawkey interface{} // This is the raw key, like *rsa.PrivateKey or *ecdsa.PrivateKey
+		var rawkey interface{}
 		if err := key.Raw(&rawkey); err != nil {
 			log.Printf("failed to create public key: %s", err)
 			return
 		}
 
-		// We know this is an RSA Key so...
 		rsa___, ok := rawkey.(*rsa.PublicKey)
-		fmt.Println(rsa___)
+
 		if !ok {
 			panic(fmt.Sprintf("expected ras key, got %T", rawkey))
 		}
-		// As this is a demo just dump the key to the console
+
 		payload := `{
 			"context": "` + keyId + `",
 			"index": 0,
 			"data":{
 				"securityCode":"260",
 				"number":"4767718212263745",
-				"type":"002",
-				"expMonth":"02",
-				"expYear":"2026"
+				"type":"001",
+				"expirationMonth":"02",
+				"expirationYear":"2026"
 			}
 		}`
 
@@ -172,42 +149,43 @@ func CyberSourceV2(keyId string) {
 				"n":"` + n + `"
 			}
 		}`
-		fmt.Println(h_map)
+
 		headerMap := make(map[string]interface{})
 		err := json.Unmarshal([]byte(h_map), &headerMap)
 		if err != nil {
 			panic(err)
 		}
 		dumpMap("", headerMap)
-		//fmt.Println(rsa.Size())
-		/*z := new(big.Int)
-		z.SetBytes(eDecoded)
 
-		byteToInt, _ := strconv.Atoi(string(nDecoded))
-
-		p_key := rsa.PublicKey{
-			N: z,
-			E: byteToInt,
-		}*/
-		fmt.Println(utf8.RuneCountInString(payload))
 		token__, err__ := jose.Encrypt(payload, jose.RSA_OAEP, jose.A256GCM, rsa___, jose.Headers(headerMap))
 		if err__ != nil {
 			fmt.Println(err__)
 		}
-		//fmt.Println(rsa___.N.BitLen())
-		fmt.Println(utf8.RuneCountInString(token__))
-		fmt.Println(token__)
+		returnVal = token__
+
 	}
-	// Header, Rsa, encryptedObject --> found
-
-	//Let's encrypt
-
+	return returnVal
+}
+func retrievePaymentToken(keyId string) (jti string) {
+	key := strings.Split(keyId, ".")[1]
+	decodedKeyBytes, _ := base64.StdEncoding.DecodeString(key)
+	decodedKeyString_ := string(decodedKeyBytes) + "}"
+	fmt.Println(decodedKeyString_)
+	var encrypt PaymentToken
+	if err := json.Unmarshal([]byte(decodedKeyString_), &encrypt); err != nil {
+		fmt.Println(err)
+	}
+	return encrypt.Jti
 }
 
 type PublicKey struct {
 	N *big.Int // modulus
 	E int      // public exponent
 }
+type PaymentToken struct {
+	Jti string `json:"jti"`
+}
+
 type Card struct {
 	SecurityCode string `json:"securityCode"`
 	Number       string `json:"number"`

@@ -2,6 +2,10 @@ package main
 
 import "bytes"
 
+type PokemonCenterLoginResponse struct {
+	Access_token string
+}
+
 type PokemonCenterNextData struct {
 	Props struct {
 		IsServer     bool
@@ -67,11 +71,11 @@ type PokemonCenterStockCheckResponse struct {
 }
 
 type PokemonCenterLoginRequest struct {
-	Username string
-	Password string
-	Grant_type string
-	Role string
-	Scope string
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	Grant_type string `json:"grant_type"`
+	Role       string `json:"role"`
+	Scope      string `json:"scope"`
 }
 
 type Self struct {

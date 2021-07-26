@@ -49,7 +49,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create Datadome cookie
 	cookie := &http.Cookie{
 		Name:   "datadome",
-		Value:  "9VrlPKMJDF~yTp.ueYjkDiV7w4xU3k1nbsWMXvHekV82tNch9AVpjZc5IrfxN~1H9EicjY8mXFAJVA0.F5ZTcfxLFm-LUPid3glq4FVphj",
+		Value:  "GN-PNJYbciby6w3IofWWZGxlJhR_MUPrkwj9U_XPL3fIIcZ4BGCFufFudt-j4wNnwXn96~7O14ZOa-7c6dt_gEe~nODOYMXkcxmqzs0IdZ",
 		Path:   "/",
 		Domain: ".pokemoncenter.com",
 	}
@@ -112,19 +112,17 @@ func PokemonCenterNewRequest(requestType interface{}) *http.Request {
 
 func PokemonCenterAddHeaders(header Header) http.Header {
 	var x = http.Header{
-		"Host":             {"www.pokemoncenter.com"},
 		"Connection":       {"keep-alive"},
 		"sec-ch-ua":        {"Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91"},
-		"content-type":     {"application/json"},
+		"content-type":     {"application/jwt; charset=UTF-8"},
 		"sec-ch-ua-mobile": {"?0"},
 		"User-Agent":       {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"},
 		"X-Store-Scope":    {"pokemon"},
 		"Accept":           {"*/*"},
-		"Origin":           {"https://www.pokemoncenter.com"},
+		"Origin":           {"https://flex.cybersource.com"},
 		"Sec-Fetch-Site":   {"same-origin"},
 		"Sec-Fetch-Mode":   {"cors"},
 		"Sec-Fetch-Dest":   {"empty"},
-		"Referer":          {"https://www.pokemoncenter.com/product/706-29048/pokemon-super-special-flip-book-kalos-region-and-unova-region"},
 		"Accept-Language":  {"en-GB,en-US;q=0.9,en;q=0.8"},
 	}
 
