@@ -14,7 +14,7 @@ import (
 )
 
 //Testing etc.
-func Demo() {
+func PokemonCenterDemo() {
 	client := PokemonCenterClientSetup()
 	//Set-Cookie is not working with this cookie, I think its the format.
 	//Also unable to set auth cookie in cookie jar like we do with datadome,
