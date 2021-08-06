@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -39,7 +38,7 @@ func PokemonCenterClientSetup() http.Client {
 	//Create empty cookiejar
 	cookieJar, _ := cookiejar.New(nil)
 	//Create client
-	client := PokemonCenterNewClient()
+	client := NewClient()
 	//Create and set cookiejar in client
 	client.Jar = cookieJar
 
@@ -64,28 +63,6 @@ func PokemonCenterClientSetup() http.Client {
 	cookieJar.SetCookies(u, cookies)
 
 	return client
-}
-
-func PokemonCenterNewResponse(client http.Client, request *http.Request) ([]byte, *http.Response) {
-	request.Close = true
-
-	resp, err := client.Do(request)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	body, _ := ioutil.ReadAll(resp.Body)
-	return body, resp
-}
-
-func PokemonCenterNewClient() http.Client {
-	proxyUrl, err := url.Parse("http://localhost:8866")
-	if err != nil {
-		log.Fatal("Failed + " + err.Error())
-	}
-
-	return http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
 }
 
 func PokemonCenterNewRequest(requestType interface{}) *http.Request {

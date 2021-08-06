@@ -89,6 +89,10 @@ type POST struct {
 	Payload  *bytes.Reader
 }
 
+type POSTUrlEncoded struct {
+	Endpoint string
+	EncodedPayload  string
+}
 type GET struct {
 	Endpoint string
 }

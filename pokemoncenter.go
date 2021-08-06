@@ -79,8 +79,8 @@ func PokemonCenterLogin(client http.Client, directCookie []string) string {
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader([]byte(params.Encode()))})
-	respBytes, respString := PokemonCenterNewResponse(client, request)
+	//request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader([]byte(params.Encode()))})
+	respBytes, respString := NewResponse(client, request)
 	pokemonCenterLoginResponse := PokemonCenterLoginResponse{}
 	json.Unmarshal(respBytes, &pokemonCenterLoginResponse)
 	fmt.Println("response Body:", respString)
@@ -100,8 +100,8 @@ func PokemonCenterStockCheck(client http.Client, directCookie []string, product 
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	responseBytes, _ := PokemonCenterNewResponse(client, request)
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	responseBytes, _ := NewResponse(client, request)
 
 	pokemonCenterStockCheckResponse := PokemonCenterStockCheckResponse{}
 	json.Unmarshal(responseBytes, &pokemonCenterStockCheckResponse)
@@ -138,8 +138,8 @@ func PokemonCenterAddToCart(client http.Client, directCookie []string) {
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	_, respString := PokemonCenterNewResponse(client, request)
+	//request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	_, respString := NewResponse(client, request)
 
 	//Please enable JS and disable any ad blocker = captcha, New cookie needed.
 
@@ -182,8 +182,8 @@ func PokemonCenterSubmitAddressDetailsValidate(client http.Client, directCookie 
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	_, respString := PokemonCenterNewResponse(client, request)
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	_, respString := NewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
 }
@@ -224,8 +224,8 @@ func PokemonCenterSubmitAddressDetails(client http.Client, directCookie []string
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	_, respString := PokemonCenterNewResponse(client, request)
+	//request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	_, respString := NewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
 }
@@ -248,8 +248,8 @@ func PokemonCenterSubmitPaymentDetails(client http.Client, directCookie []string
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	respBytes, respString := PokemonCenterNewResponse(client, request)
+	//request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	respBytes, respString := NewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
 	return respBytes
@@ -271,8 +271,8 @@ func PokemonCenterCheckout(client http.Client, directCookie []string, payloadVal
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
-	_, respString := PokemonCenterNewResponse(client, request)
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader(payloadBytes)})
+	_, respString := NewResponse(client, request)
 
 	fmt.Println("response Body:", respString)
 }
@@ -283,8 +283,8 @@ func PokemonCenterGetPaymentKeyId(client http.Client, directCookie []string) str
 	}
 
 	request := PokemonCenterNewRequest(get)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
-	respBytes, _ := PokemonCenterNewResponse(client, request)
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: nil})
+	respBytes, _ := NewResponse(client, request)
 
 	//fmt.Println("response Body:", respString)
 
@@ -297,9 +297,9 @@ func PokemonCenterGetAuthId(client http.Client, directCookie []string) string {
 	}
 
 	request := PokemonCenterNewRequest(get)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: nil})
 
-	_, resp := PokemonCenterNewResponse(client, request)
+	_, resp := NewResponse(client, request)
 
 	rawHeader := resp.Header.Get("Set-Cookie")
 	re := regexp.MustCompile("({)(.*?)(})")
@@ -318,9 +318,9 @@ func PokemonCenterConvertSku(client http.Client, directCookie []string) string {
 	}
 
 	request := PokemonCenterNewRequest(get)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: nil})
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: nil})
 
-	respBytes, _ := PokemonCenterNewResponse(client, request)
+	respBytes, _ := NewResponse(client, request)
 
 	responseBody := soup.HTMLParse(string(respBytes))
 	nextData := responseBody.Find("script", "id", "__NEXT_DATA__")
@@ -351,8 +351,8 @@ func PokemonCenterToken(client http.Client, directCookie []string, payloadBytes 
 	}
 
 	request := PokemonCenterNewRequest(post)
-	request.Header = PokemonCenterAddHeaders(Header{cookie: directCookie, content: bytes.NewReader([]byte(payloadBytes))})
-	respbytes, _ := PokemonCenterNewResponse(client, request)
+	//	request.Header = AddHeaders(Header{cookie: directCookie, content: bytes.NewReader([]byte(payloadBytes))})
+	respbytes, _ := NewResponse(client, request)
 
 	//fmt.Println("response Body:", respString)
 	return string(respbytes)
